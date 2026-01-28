@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import './App.css';
 
 // Types
@@ -68,8 +68,6 @@ function App() {
 
   const [isStreaming, setIsStreaming] = useState(false);
   const [snarkLevel, setSnarkLevel] = useState(3);
-  const [apiKey, setApiKey] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const [analysis, setAnalysis] = useState<AnalysisState>({
@@ -136,13 +134,8 @@ function App() {
 
   // Analyze frame with GPT-4 Vision
   const analyzeFrame = useCallback(async (imageData: string, previousContext: string) => {
-    if (!apiKey) {
-      setError('Add your OpenAI API key in settings');
-      return null;
-    }
-
     const persona = SNARK_PERSONAS[snarkLevel];
-    
+
     const messages = [
       {
         role: 'system',
@@ -180,41 +173,16 @@ Respond with a JSON object:
     ];
 
     try {
-      const requestBody = {
-        model: 'gpt-4o',
-        messages,
-        max_tokens: 300,
-        temperature: 0.9
-      };
-
-      let response: Response;
-
-      // Try backend proxy first (uses server-side API key)
-      try {
-        response = await fetch('/api/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-        if (!response.ok && response.status === 400) {
-          // Server has no API key configured, fall back to client-side
-          throw new Error('no server key');
-        }
-      } catch {
-        // Fall back to direct OpenAI call with client-side key
-        if (!apiKey) {
-          setError('Add your OpenAI API key in settings');
-          return null;
-        }
-        response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify(requestBody)
-        });
-      }
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages,
+          max_tokens: 300,
+          temperature: 0.9
+        })
+      });
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -222,13 +190,12 @@ Respond with a JSON object:
 
       const data = await response.json();
       const content = data.choices[0]?.message?.content;
-      
+
       // Parse JSON response
       try {
         const parsed = JSON.parse(content);
         return parsed;
       } catch {
-        // If not valid JSON, treat as plain commentary
         return {
           commentary: content,
           theory: analysis.currentTheory,
@@ -239,10 +206,10 @@ Respond with a JSON object:
       }
     } catch (err) {
       console.error('Analysis error:', err);
-      setError('API call failed. Check your key and try again.');
+      setError('Analysis failed. Please try again.');
       return null;
     }
-  }, [apiKey, snarkLevel, analysis.currentTheory]);
+  }, [snarkLevel, analysis.currentTheory]);
 
   // Start live analysis
   const startAnalysis = useCallback(() => {
@@ -303,19 +270,6 @@ Respond with a JSON object:
     };
   }, [stopCamera]);
 
-  // Load API key from localStorage
-  useEffect(() => {
-    const savedKey = localStorage.getItem('honest-ads-api-key');
-    if (savedKey) setApiKey(savedKey);
-  }, []);
-
-  // Save API key to localStorage
-  const saveApiKey = (key: string) => {
-    setApiKey(key);
-    localStorage.setItem('honest-ads-api-key', key);
-    setShowSettings(false);
-  };
-
   return (
     <div className="app">
       {/* Scanline overlay */}
@@ -328,30 +282,7 @@ Respond with a JSON object:
           <span className="title-ads">ADS</span>
         </h1>
         <p className="tagline">THE TRUTH BEHIND THE HYPE</p>
-        <button 
-          className="settings-btn"
-          onClick={() => setShowSettings(!showSettings)}
-        >
-          ⚙
-        </button>
       </header>
-
-      {/* Settings Panel */}
-      {showSettings && (
-        <div className="settings-panel">
-          <h3>CONFIGURATION</h3>
-          <label>
-            OpenAI API Key:
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-..."
-            />
-          </label>
-          <button onClick={() => saveApiKey(apiKey)}>SAVE & CLOSE</button>
-        </div>
-      )}
 
       {/* Main Content */}
       <main className="main">
