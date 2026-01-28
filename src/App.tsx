@@ -180,7 +180,8 @@ Respond with a JSON object:
           model: 'gpt-4o',
           messages,
           max_tokens: 300,
-          temperature: 0.9
+          temperature: 0.9,
+          response_format: { type: 'json_object' }
         })
       });
 
@@ -189,15 +190,19 @@ Respond with a JSON object:
       }
 
       const data = await response.json();
-      const content = data.choices[0]?.message?.content;
+      let content = data.choices[0]?.message?.content || '';
+
+      // Strip markdown code fences if present
+      content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
 
       // Parse JSON response
       try {
         const parsed = JSON.parse(content);
         return parsed;
       } catch {
+        // If still not valid JSON, extract just the commentary text
         return {
-          commentary: content,
+          commentary: content.replace(/[{}"]/g, '').trim() || 'Analyzing...',
           theory: analysis.currentTheory,
           brandGuess: null,
           confidence: 'guessing',
