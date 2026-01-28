@@ -427,17 +427,30 @@ body {
   border-left: 3px solid var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.4;
-  animation: slideIn 0.3s ease-out;
+  animation: fadeSlideIn 0.4s ease-out;
+  transition: opacity 0.5s ease;
 }
 
-@keyframes slideIn {
+.commentary-entry:last-child {
+  opacity: 1;
+}
+
+.commentary-entry:nth-last-child(2) {
+  opacity: 0.5;
+}
+
+.commentary-entry:nth-last-child(3) {
+  opacity: 0.2;
+}
+
+@keyframes fadeSlideIn {
   from {
     opacity: 0;
-    transform: translateX(-10px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 

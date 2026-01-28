@@ -247,7 +247,7 @@ Respond with a JSON object:
 
         setAnalysis(prev => ({
           ...prev,
-          commentary: [...prev.commentary.slice(-10), newEntry], // Keep last 10
+          commentary: [...prev.commentary.slice(-2), newEntry], // Keep last 3 visible
           currentTheory: result.theory || prev.currentTheory,
           brandGuess: result.brandGuess || prev.brandGuess,
           tropeDetected: [...new Set([...prev.tropeDetected, ...(result.tropesDetected || [])])]
