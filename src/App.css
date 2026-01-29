@@ -428,7 +428,7 @@ body {
   right: 1rem;
   z-index: 10;
   background: rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--text-secondary);
+  border: none;
   color: var(--text-primary);
   width: 36px;
   height: 36px;
@@ -441,7 +441,6 @@ body {
 }
 
 .immersive-settings-btn:hover {
-  border-color: var(--accent-cyan);
   color: var(--accent-cyan);
 }
 
