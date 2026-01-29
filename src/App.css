@@ -607,6 +607,413 @@ body {
   }
 }
 
+/* View Toggle Button (classic view) */
+.view-toggle-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-toggle-btn:hover {
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+}
+
+/* ========================= */
+/* IMMERSIVE INTRO SCREEN    */
+/* ========================= */
+
+.app.immersive-intro {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.immersive-intro-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  animation: fadeSlideIn 0.6s ease-out;
+}
+
+.immersive-intro-title {
+  font-family: var(--font-display);
+  font-size: 5rem;
+  line-height: 1;
+}
+
+.immersive-intro-tagline {
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  color: var(--text-secondary);
+}
+
+.immersive-intro-instructions {
+  margin-top: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.immersive-intro-instructions em {
+  color: var(--accent-yellow);
+  font-style: normal;
+  font-weight: bold;
+}
+
+.immersive-intro-go {
+  margin-top: 1rem;
+  padding: 1rem 2.5rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+  background: var(--accent-red);
+  color: var(--text-primary);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.immersive-intro-go:hover {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.immersive-intro-back {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s;
+}
+
+.immersive-intro-back:hover {
+  color: var(--accent-cyan);
+}
+
+/* ===================== */
+/* IMMERSIVE VIEW STYLES */
+/* ===================== */
+
+.app.immersive {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: #000;
+}
+
+.immersive-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.immersive-video.active {
+  opacity: 1;
+}
+
+/* Logo — top-left, compact, semi-transparent */
+.immersive-logo {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  opacity: 0.7;
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+
+.immersive-logo-honest {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.immersive-logo-ads {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--accent-red);
+}
+
+/* Analyzing indicator — below logo */
+.immersive-analyzing {
+  position: absolute;
+  top: 3rem;
+  left: 1rem;
+  z-index: 10;
+  background: rgba(255, 0, 68, 0.8);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.65rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Toggle button — top-right */
+.immersive-toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.immersive-toggle:hover {
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+}
+
+/* Tropes — horizontal scroll at top */
+.immersive-tropes {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 0.4rem;
+  max-width: 60%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.immersive-tropes::-webkit-scrollbar {
+  display: none;
+}
+
+.immersive-trope-tag {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--accent-yellow);
+  color: var(--accent-yellow);
+  padding: 0.2rem 0.5rem;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Working theory — bottom-left */
+.immersive-theory {
+  position: absolute;
+  bottom: 5rem;
+  left: 1rem;
+  z-index: 10;
+  max-width: 40%;
+  background: rgba(0, 0, 0, 0.7);
+  border-left: 3px solid var(--accent-cyan);
+  padding: 0.6rem 0.8rem;
+}
+
+.immersive-theory .theory-label {
+  font-size: 0.55rem;
+}
+
+.immersive-theory p {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+/* Commentary — bottom-right */
+.immersive-commentary {
+  position: absolute;
+  bottom: 5rem;
+  right: 1rem;
+  z-index: 10;
+  max-width: 40%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.immersive-commentary-entry {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  border-left: 3px solid var(--text-secondary);
+  animation: fadeSlideIn 0.4s ease-out;
+}
+
+.immersive-commentary-entry.suspicious {
+  border-color: var(--accent-yellow);
+}
+
+.immersive-commentary-entry.certain {
+  border-color: var(--accent-green);
+}
+
+.immersive-commentary-entry:last-child { opacity: 1; }
+.immersive-commentary-entry:nth-last-child(2) { opacity: 0.6; }
+.immersive-commentary-entry:nth-last-child(3) { opacity: 0.3; }
+
+/* Brand detected — bottom-center */
+.immersive-brand {
+  position: absolute;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(0, 255, 102, 0.9);
+  color: var(--bg-primary);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+/* Single action button — center */
+.immersive-action-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  padding: 1rem 2.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.immersive-action-btn.btn-primary {
+  background: var(--accent-red);
+  color: var(--text-primary);
+}
+
+.immersive-action-btn.btn-primary:hover {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.immersive-action-btn.btn-danger {
+  background: var(--danger);
+  color: var(--text-primary);
+  animation: pulseBg 1s infinite;
+}
+
+/* Snark slider — bottom edge, minimal */
+.immersive-snark {
+  position: absolute;
+  bottom: 0.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.3rem 0.8rem;
+  border-radius: 2px;
+}
+
+.immersive-snark-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  color: var(--accent-yellow);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+}
+
+.immersive-snark-slider {
+  -webkit-appearance: none;
+  width: 120px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+.immersive-snark-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--accent-red);
+  cursor: pointer;
+  border: 1px solid var(--text-primary);
+}
+
+.immersive-snark-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--accent-red);
+  cursor: pointer;
+  border: 1px solid var(--text-primary);
+}
+
+/* Placeholder — center, when no camera */
+.immersive-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.immersive-placeholder .placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.immersive-placeholder p {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+}
+
+/* Error in immersive mode */
+.immersive-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  max-width: 80%;
+}
+
 /* PWA safe areas */
 @supports (padding: env(safe-area-inset-top)) {
   .header {

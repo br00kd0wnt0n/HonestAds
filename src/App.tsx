@@ -69,6 +69,8 @@ function App() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [snarkLevel, setSnarkLevel] = useState(3);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'classic' | 'immersive'>('classic');
+  const [immersiveReady, setImmersiveReady] = useState(false);
   
   const [analysis, setAnalysis] = useState<AnalysisState>({
     isAnalyzing: false,
@@ -268,6 +270,49 @@ Respond with a JSON object:
     setAnalysis(prev => ({ ...prev, isAnalyzing: false }));
   }, []);
 
+  // Immersive single-button handler: START → STOP → ANALYZE ANOTHER
+  const handleImmersiveAction = useCallback(async () => {
+    if (!isStreaming) {
+      // START: start camera + begin analysis automatically
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          streamRef.current = stream;
+          setIsStreaming(true);
+          setError(null);
+          // Auto-start analysis after a brief delay for camera to initialize
+          setTimeout(() => {
+            startAnalysis();
+          }, 500);
+        }
+      } catch (err) {
+        setError('Camera access denied. Point me at your TV!');
+        console.error('Camera error:', err);
+      }
+    } else if (analysis.isAnalyzing) {
+      // STOP: stop analysis, keep camera
+      stopAnalysis();
+    } else {
+      // ANALYZE ANOTHER: clear state, restart analysis
+      setAnalysis({
+        isAnalyzing: false,
+        currentTheory: '',
+        brandGuess: null,
+        tropeDetected: [],
+        commentary: []
+      });
+      setTimeout(() => {
+        startAnalysis();
+      }, 100);
+    }
+  }, [isStreaming, analysis.isAnalyzing, startAnalysis, stopAnalysis]);
+
+  const immersiveButtonLabel = !isStreaming ? 'START' : analysis.isAnalyzing ? 'STOP' : 'ANALYZE ANOTHER';
+  const immersiveButtonClass = !isStreaming ? 'btn-primary' : analysis.isAnalyzing ? 'btn-danger' : 'btn-primary';
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -275,11 +320,152 @@ Respond with a JSON object:
     };
   }, [stopCamera]);
 
+  // Lock body scroll in immersive mode
+  useEffect(() => {
+    if (viewMode === 'immersive') {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [viewMode]);
+
+  if (viewMode === 'immersive' && !immersiveReady) {
+    return (
+      <div className="app immersive-intro">
+        <div className="scanlines" />
+        <div className="immersive-intro-content">
+          <h1 className="immersive-intro-title">
+            <span className="title-honest">HONEST</span>
+            <span className="title-ads">ADS</span>
+          </h1>
+          <p className="immersive-intro-tagline">THE TRUTH BEHIND THE HYPE</p>
+          <div className="immersive-intro-instructions">
+            <p>Point your camera at any TV ad.</p>
+            <p>We'll tell you what they're <em>really</em> selling.</p>
+          </div>
+          <button className="immersive-intro-go" onClick={() => setImmersiveReady(true)}>
+            ENTER THE TRUTH MACHINE
+          </button>
+          <button className="immersive-intro-back" onClick={() => setViewMode('classic')}>
+            back to classic
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (viewMode === 'immersive') {
+    return (
+      <div className="app immersive">
+        <div className="scanlines" />
+
+        {/* Fullscreen video */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className={`immersive-video ${isStreaming ? 'active' : ''}`}
+        />
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+        {/* Top-left: logo */}
+        <div className="immersive-logo">
+          <span className="immersive-logo-honest">HONEST</span>
+          <span className="immersive-logo-ads">ADS</span>
+        </div>
+
+        {/* Analyzing indicator below logo */}
+        {analysis.isAnalyzing && (
+          <div className="immersive-analyzing">
+            <span className="pulse">●</span> ANALYZING
+          </div>
+        )}
+
+        {/* Top-right: view toggle */}
+        <button className="immersive-toggle" onClick={() => { setViewMode('classic'); setImmersiveReady(false); }}>
+          CLASSIC
+        </button>
+
+        {/* Tropes: horizontal scrolling tags at top */}
+        {analysis.tropeDetected.length > 0 && (
+          <div className="immersive-tropes">
+            {analysis.tropeDetected.map((trope, i) => (
+              <span key={i} className="immersive-trope-tag">{trope}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Bottom-left: working theory */}
+        {analysis.currentTheory && (
+          <div className="immersive-theory">
+            <span className="theory-label">WORKING THEORY:</span>
+            <p>{analysis.currentTheory}</p>
+          </div>
+        )}
+
+        {/* Bottom-right: commentary */}
+        {analysis.commentary.length > 0 && (
+          <div className="immersive-commentary">
+            {analysis.commentary.map((entry) => (
+              <div key={entry.id} className={`immersive-commentary-entry ${entry.confidence}`}>
+                {entry.text}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Bottom-center: brand detected */}
+        {analysis.brandGuess && (
+          <div className="immersive-brand">
+            <span className="brand-label">SUSPECT:</span>
+            <span className="brand-name">{analysis.brandGuess}</span>
+          </div>
+        )}
+
+        {/* Center: single action button */}
+        <button className={`immersive-action-btn ${immersiveButtonClass}`} onClick={handleImmersiveAction}>
+          {immersiveButtonLabel}
+        </button>
+
+        {/* Bottom: snark slider */}
+        <div className="immersive-snark">
+          <span className="immersive-snark-label">{SNARK_PERSONAS[snarkLevel].name}</span>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            value={snarkLevel}
+            onChange={(e) => setSnarkLevel(parseInt(e.target.value))}
+            className="immersive-snark-slider"
+          />
+        </div>
+
+        {/* Placeholder when no camera */}
+        {!isStreaming && (
+          <div className="immersive-placeholder">
+            <span className="placeholder-icon">📺</span>
+            <p>POINT AT YOUR TV</p>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="error-banner immersive-error">
+            <span>⚠</span> {error}
+            <button onClick={() => setError(null)}>×</button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       {/* Scanline overlay */}
       <div className="scanlines" />
-      
+
       {/* Header */}
       <header className="header">
         <h1 className="title">
@@ -287,6 +473,9 @@ Respond with a JSON object:
           <span className="title-ads">ADS</span>
         </h1>
         <p className="tagline">THE TRUTH BEHIND THE HYPE</p>
+        <button className="view-toggle-btn" onClick={() => setViewMode('immersive')}>
+          IMMERSIVE
+        </button>
       </header>
 
       {/* Main Content */}
@@ -301,14 +490,14 @@ Respond with a JSON object:
             className={`video-feed ${isStreaming ? 'active' : ''}`}
           />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
-          
+
           {!isStreaming && (
             <div className="video-placeholder">
               <span className="placeholder-icon">📺</span>
               <p>POINT AT YOUR TV</p>
             </div>
           )}
-          
+
           {analysis.isAnalyzing && (
             <div className="analyzing-indicator">
               <span className="pulse">●</span> ANALYZING
@@ -337,8 +526,8 @@ Respond with a JSON object:
             />
             <div className="snark-markers">
               {[1, 2, 3, 4, 5].map(level => (
-                <span 
-                  key={level} 
+                <span
+                  key={level}
                   className={`marker ${snarkLevel === level ? 'active' : ''}`}
                 >
                   {level}
@@ -355,25 +544,25 @@ Respond with a JSON object:
         {/* Commentary Feed */}
         <div className="commentary-feed">
           <h2 className="commentary-title">LIVE TRANSLATION</h2>
-          
+
           {analysis.currentTheory && (
             <div className="current-theory">
               <span className="theory-label">WORKING THEORY:</span>
               <p>{analysis.currentTheory}</p>
             </div>
           )}
-          
+
           <div className="commentary-list">
             {analysis.commentary.length === 0 ? (
               <p className="no-commentary">
-                {isStreaming 
-                  ? 'Hit ANALYZE to start the truth extraction...' 
+                {isStreaming
+                  ? 'Hit ANALYZE to start the truth extraction...'
                   : 'Start camera and point at an ad to begin...'}
               </p>
             ) : (
               analysis.commentary.map((entry) => (
-                <div 
-                  key={entry.id} 
+                <div
+                  key={entry.id}
                   className={`commentary-entry ${entry.confidence}`}
                 >
                   <span className="entry-text">{entry.text}</span>
